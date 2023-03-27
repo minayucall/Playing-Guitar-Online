@@ -1,0 +1,76 @@
+import pygame
+import pyaudio
+import numpy as np
+
+# Gitar akorları ve nota frekansları
+chords = {
+    "C": [261.63, 329.63, 392.00],
+    "G": [196.00, 246.94, 293.66],
+    "D": [146.83, 185.00, 220.00],
+    "A": [110.00, 138.59, 164.81],
+    "E": [82.41, 103.83, 123.47],
+}
+
+# Pygame penceresi ayarları
+pygame.init()
+pygame.display.set_caption("Guitar Chords")
+window = pygame.display.set_mode((400, 300))
+
+# PyAudio ayarları
+p = pyaudio.PyAudio()
+volume = 0.5
+sampling_rate = 44100
+
+# Ana döngü
+running = True
+while running:
+    # Pencere kapatılana kadar çalışır
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Akor seçimi ve nota frekansları
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[pygame.K_c]:
+        chord = chords["C"]
+    elif pressed_keys[pygame.K_g]:
+        chord = chords["G"]
+    elif pressed_keys[pygame.K_d]:
+        chord = chords["D"]
+    elif pressed_keys[pygame.K_a]:
+        chord = chords["A"]
+    elif pressed_keys[pygame.K_e]:
+        chord = chords["E"]
+    else:
+        chord = None
+
+    # Ses çıkışı
+    if chord:
+        # Sinyal üretimi
+        length = 2  # saniye cinsinden
+        samples = int(sampling_rate * length)
+        t = np.linspace(0, length, samples, False)
+        signal = volume * (np.sin(2 * np.pi * chord[0] * t) +
+                           np.sin(2 * np.pi * chord[1] * t) +
+                           np.sin(2 * np.pi * chord[2] * t))
+        signal = signal.astype(np.float32)
+
+        # Ses çıkışı
+        stream = p.open(format=pyaudio.paFloat32,
+                        channels=1,
+                        rate=sampling_rate,
+                        output=True)
+        stream.write(signal)
+        stream.close()
+
+    # Ekranı temizle
+    window.fill((255, 255, 255))
+    pygame.display.flip()
+
+# Kapat
+pygame.quit()
+
+
+
+
+
